@@ -10,4 +10,4 @@ Some descriptive information about the parent task.
 | ------------------ | ------------------------------------------------------------------------------------------- | ------ | ----------- | ---------- |
 | Subtask 1          | This is an optional field                                                                   | 1      | done        |            |
 | Subtask 2          | Have spent a good amount of time doing this                                                 | 2      | in-progress |            |
-| some other subtask | Note that ==Status== is only counted when it matches one of the 'done' words, including "✅" | 1      | ✅           | 2026-01-25 |
+| some other subtask | Note that ==Status== is only counted when it matches one of the 'done' words, including "done" and "✅" among others | 1      | ✅           | 2026-01-25 |

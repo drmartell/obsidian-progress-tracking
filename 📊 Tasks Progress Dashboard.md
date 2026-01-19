@@ -57,7 +57,7 @@ async function parseSubtasks(page) {
     const headerCells = tableLines[0]
         .split('|')
         .map(s => s.trim().toLowerCase())
-        .filter(s => s);
+        .slice(1, -1);  // Remove first/last empty elements from pipe split, preserve empty cells
     const pointsIdx = headerCells.indexOf('points');
     const statusIdx = headerCells.indexOf('status');
     if (pointsIdx === -1 || statusIdx === -1) return [];
@@ -67,7 +67,7 @@ async function parseSubtasks(page) {
         const cells = tableLines[i]
             .split('|')
             .map(s => s.trim())
-            .filter(s => s);
+            .slice(1, -1);  // Remove first/last empty elements from pipe split, preserve empty cells
         if (cells.length > Math.max(pointsIdx, statusIdx)) {
             const points = parseFloat(cells[pointsIdx]) || 0;
             const status = cells[statusIdx].toLowerCase().trim();

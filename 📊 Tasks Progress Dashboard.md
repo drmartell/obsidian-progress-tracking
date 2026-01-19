@@ -125,8 +125,9 @@ const pages = dv.pages().where(p => {
     const isInFolder = folder === CURRENT_FOLDER ||
         folder.startsWith(CURRENT_FOLDER + "/");
     const isTask = p["task-start"] && p["task-due"];
+    const isArchived = p["task-status"] === "archived";
     const isIgnored = IGNORED_FILES.includes(p.file.name);
-    return isInFolder && isTask && !isIgnored;
+    return isInFolder && isTask && !isArchived && !isIgnored;
 });
 
 debug("Pages found after filter", pages.length);

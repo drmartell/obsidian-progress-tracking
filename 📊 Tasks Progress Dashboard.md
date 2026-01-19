@@ -237,7 +237,7 @@ if (taskData.length === 0) {
             });
             const headerLeft = dv.el('div', '', {
                 container: header,
-                attr: { style: 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap;' }
+                attr: { style: 'display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex-wrap: wrap; flex: 1;' }
             });
             dv.el('strong', task.link, { container: headerLeft });
             dv.el('span', `📁 ${task.parentFolder}`, {

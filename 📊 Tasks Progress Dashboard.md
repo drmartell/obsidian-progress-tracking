@@ -3,7 +3,7 @@
 // Configuration
 const CURRENT_FOLDER = dv.current().file.folder;
 const IGNORED_FILES = ["_Task Template"];
-const DONE_STATUSES = ["done", "complete", "completed", "finished", "✅", "true", true];
+const DONE_STATUSES = ["archived", "complete", "completed", "done", "finished", "✅", "true", true];
 const YELLOW_THRESHOLD = -0.10;
 const RED_THRESHOLD = -0.10;
 
@@ -125,7 +125,7 @@ const pages = dv.pages().where(p => {
     const isInFolder = folder === CURRENT_FOLDER ||
         folder.startsWith(CURRENT_FOLDER + "/");
     const isTask = p["task-start"] && p["task-due"];
-    const isArchived = p["task-status"] === "archived";
+    const isArchived = DONE_STATUSES.includes(p["task-status"]);
     const isIgnored = IGNORED_FILES.includes(p.file.name);
     return isInFolder && isTask && !isArchived && !isIgnored;
 });
@@ -144,7 +144,7 @@ function getParentFolder(filePath) {
 
 const taskData = await Promise.all(pages.map(async (page) => {
     const subtasks = await parseSubtasks(page);
-    const totalPoints = subtasks.reduce((sum, s) => sum + s.points, 0);
+    const totalPoints = Math.max(page["task-point-target"] || 0, subtasks.reduce((sum, s) => sum + s.points, 0));
     const completedPoints = subtasks
         .filter(s => DONE_STATUSES.includes(s.status))
         .reduce((sum, s) => sum + s.points, 0);

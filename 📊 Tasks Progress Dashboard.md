@@ -125,7 +125,7 @@ const pages = dv.pages().where(p => {
     const isInFolder = folder === CURRENT_FOLDER ||
         folder.startsWith(CURRENT_FOLDER + "/");
     const isTask = p["task-start"] && p["task-due"];
-    const isArchived = DONE_STATUSES.includes(p["task-status"]);
+    const isArchived = DONE_STATUSES.includes(p["task-status"]?.toLowerCase());
     const isIgnored = IGNORED_FILES.includes(p.file.name);
     return isInFolder && isTask && !isArchived && !isIgnored;
 });
@@ -146,7 +146,7 @@ const taskData = await Promise.all(pages.map(async (page) => {
     const subtasks = await parseSubtasks(page);
     const totalPoints = Math.max(page["task-point-target"] || 0, subtasks.reduce((sum, s) => sum + s.points, 0));
     const completedPoints = subtasks
-        .filter(s => DONE_STATUSES.includes(s.status))
+        .filter(s => DONE_STATUSES.includes(s.status?.toLowerCase()))
         .reduce((sum, s) => sum + s.points, 0);
     const actualProgress = totalPoints > 0 ? completedPoints / totalPoints : 0;
     const { expectedProgress, progressDiff } = calculateScheduleStatus(

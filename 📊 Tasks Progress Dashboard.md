@@ -52,7 +52,7 @@ async function parseSubtasks(page) {
         }
     }
     // Need at least header + separator + one data row
-    if (tableLines.length < 3) return [];
+    if (tableLines.length < 3) return { subtasks: [], nextSubtask: null };
     // Parse header to find column indices
     const headerCells = tableLines[0]
         .split('|')
@@ -60,9 +60,11 @@ async function parseSubtasks(page) {
         .slice(1, -1);  // Remove first/last empty elements from pipe split, preserve empty cells
     const pointsIdx = headerCells.indexOf('points');
     const statusIdx = headerCells.indexOf('status');
-    if (pointsIdx === -1 || statusIdx === -1) return [];
+    const subtaskIdx = headerCells.indexOf('subtask');
+    if (pointsIdx === -1 || statusIdx === -1) return { subtasks: [], nextSubtask: null };
     // Parse data rows (skip header at index 0 and separator at index 1)
     const subtasks = [];
+    let nextSubtask = null;
     for (let i = 2; i < tableLines.length; i++) {
         const cells = tableLines[i]
             .split('|')
@@ -71,10 +73,15 @@ async function parseSubtasks(page) {
         if (cells.length > Math.max(pointsIdx, statusIdx)) {
             const points = parseFloat(cells[pointsIdx]) || 0;
             const status = cells[statusIdx].toLowerCase().trim();
-            subtasks.push({ points, status });
+            const name = subtaskIdx !== -1 && cells.length > subtaskIdx ? cells[subtaskIdx] : null;
+            subtasks.push({ points, status, name });
+            // Track first non-done subtask
+            if (nextSubtask === null && !DONE_STATUSES.includes(status)) {
+                nextSubtask = name || `Subtask ${i - 1}`;
+            }
         }
     }
-    return subtasks;
+    return { subtasks, nextSubtask };
 }
 
 // Calculate schedule status
@@ -143,7 +150,7 @@ function getParentFolder(filePath) {
 }
 
 const taskData = await Promise.all(pages.map(async (page) => {
-    const subtasks = await parseSubtasks(page);
+    const { subtasks, nextSubtask } = await parseSubtasks(page);
     const totalPoints = Math.max(page["task-point-target"] || 0, subtasks.reduce((sum, s) => sum + s.points, 0));
     const completedPoints = subtasks
         .filter(s => DONE_STATUSES.includes(s.status?.toLowerCase()))
@@ -175,7 +182,8 @@ const taskData = await Promise.all(pages.map(async (page) => {
         startDate: page["task-start"],
         dueDate,
         daysRemaining,
-        parentFolder
+        parentFolder,
+        nextSubtask
     };
 }));
 
@@ -294,6 +302,13 @@ if (taskData.length === 0) {
                 ? `${Math.abs(task.daysRemaining)} ${daysLabel} overdue`
                 : `${task.daysRemaining} ${daysLabel} remaining`;
             dv.el('span', `⏳ ${daysText}`, { container: stats });
+            // Show next subtask if present
+            if (task.nextSubtask) {
+                dv.el('div', `▶️ Next: ${task.nextSubtask}`, {
+                    container: card,
+                    attr: { style: 'margin-top: 8px; font-size: 0.85em; color: var(--text-muted); border-top: 1px solid var(--background-modifier-border); padding-top: 8px;' }
+                });
+            }
         }
     }
 }
